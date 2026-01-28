@@ -1,0 +1,19 @@
+clear
+
+% Load the data
+
+fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P403.NA.tenv3');
+
+C=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
+fclose(fid);
+%parse the data
+
+t=C{3};
+x=C{9};
+
+% Plot the data
+
+figure(1)
+clf
+plot(t,x,'.')
+
