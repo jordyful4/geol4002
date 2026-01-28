@@ -2,7 +2,7 @@ clear
 
 % Load the data
 
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P403.NA.tenv3');
+fid=fopen('P403.NA.tenv3.txt');
 
 C=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
 fclose(fid);
