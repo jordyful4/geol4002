@@ -7,6 +7,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\coastfile
 
     coast_lon=coast_data{1};
     coast_lat=coast_data{2};
+    
 %--Borders
 fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\politicalboundaryfile.xy');
     border_data=textscan(fid,'%f %f','headerlines',0);
@@ -20,7 +21,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\political
 fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P403.NA.tenv3.txt');
     P403data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
-   
+
     %-data
     tP403=P403data{3};
     xP403=P403data{9};
@@ -44,7 +45,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P404.NA.t
     xlocationP404=P404data{22}(1);
     ylocationP404=P404data{21}(1);
 
-%P396
+%Station_P396
 fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P396.NA.tenv3.txt');
     P396data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
@@ -58,7 +59,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P396.NA.t
     xlocationP396=P396data{22}(1);
     ylocationP396=P396data{21}(1);
 
-%P395
+%Station_P395
 fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P395.NA.tenv3.txt');
     P395data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
@@ -71,7 +72,6 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P395.NA.t
     %-map
     xlocationP395=P395data{22}(1);
     ylocationP395=P395data{21}(1);
-
 
 %Calculate the velocity magnitude and azimuth
 %-station P403
@@ -101,7 +101,6 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P395.NA.t
     veP404=H3(1)*1000;
 
 %-station P396
-
     vP396 = sqrt(xP396.^2 + yP396.^2);
     aziP396 = atan2d(yP396, xP396);
     
@@ -115,7 +114,6 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P395.NA.t
     veP396 = U3(1) * 1000
 
 %-station P395
-
     vP395 = sqrt(xP395.^2 + yP395.^2);
     aziP365 = atan2d(yP395, xP395);
 
@@ -141,7 +139,7 @@ quiver(xlocationP404,ylocationP404,vxP404,vyP404, 'y');
 quiver(xlocationP396,ylocationP396,vxP396,vyP396, 'b');
 quiver(xlocationP395,ylocationP395,vxP395,vyP395, 'c');
 
-%---------IGNORE FOR NOW----
+%---------IGNORE FOR NOW//OLD ASSIGNMENT CODE----
 % Plot the data
 figure(1)
 title('Time vs Lat Change')
