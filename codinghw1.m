@@ -1,7 +1,7 @@
 clear
 %Load and parse the map data
 %--Coastline
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\coastfile.xy');
+fid=fopen('coastfile.xy');
     coast_data=textscan(fid,'%f %f','headerlines',0);
     fclose(fid);
 
@@ -9,7 +9,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\coastfile
     coast_lat=coast_data{2};
     
 %--Borders
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\politicalboundaryfile.xy');
+fid=fopen('politicalboundaryfile.xy');
     border_data=textscan(fid,'%f %f','headerlines',0);
     fclose(fid);
 
@@ -18,7 +18,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\political
 
 % Load and parse the station data
 %__Station P403
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P403.NA.tenv3.txt');
+fid=fopen('P403.NA.tenv3.txt');
     P403data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
 
@@ -32,7 +32,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P403.NA.t
     ylocationP403=P403data{21}(1);
 
 %__Station P404
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P404.NA.tenv3.txt');
+fid=fopen('P404.NA.tenv3.txt');
     P404data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
     
@@ -46,7 +46,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P404.NA.t
     ylocationP404=P404data{21}(1);
 
 %Station_P396
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P396.NA.tenv3.txt');
+fid=fopen('P396.NA.tenv3.txt');
     P396data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
 
@@ -60,7 +60,7 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P396.NA.t
     ylocationP396=P396data{21}(1);
 
 %Station_P395
-fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P395.NA.tenv3.txt');
+fid=fopen('P395.NA.tenv3.txt');
     P395data=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
     fclose(fid);
 
@@ -86,6 +86,9 @@ fid=fopen('C:\Users\jojo1\OneDrive\Desktop\LSU classes\geol 4002 spr26\P395.NA.t
 
     P3=polyfit(tP403,eP403,1);
     veP403=P3(1)*1000
+
+ xP403line=polyval(P1,tP403);
+yP403line=polyval(P2,tP403);
 
 %-station P404
     vP404 = sqrt(xP404.^2 + yP404.^2);
@@ -146,7 +149,7 @@ title('Time vs Lat Change')
 clf
 plot(tP403,xP403,'.')
 hold on
-plot(tP403,xline)
+plot(tP403,xP403line)
 hold off
 
 figure (2)
@@ -154,7 +157,7 @@ title('Time vs Long Change')
 clf
 plot(tP403,yP403,'.')
 hold on
-plot(tP403,yline)
+plot(tP403,yP403line)
 hold off
 
 figure (3)
@@ -165,8 +168,8 @@ plot(tP403,eline)
 hold off
 
 %residual calculations
-xresidual=xP403-xline;
-yresidual=yP403-yline;
+xresidual=xP403-xP403line;
+yresidual=yP403-yP403line;
 eresidual=eP403-eline;
 
 %residual plot 
@@ -181,8 +184,7 @@ subplot(3,1,3)
 plot(tP403,eresidual,'.')
 
 %CALCS NOT USED FOR VECTOR MAP BUT MIGHT NEED AGAIN 
-%NTI-xline=polyval(P,tP403);
-%NTI-yline=polyval(P2,tP403);
+
 %NTI-eline=polyval(P3,tP403);
 
 %------------------------------

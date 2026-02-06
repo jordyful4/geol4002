@@ -1,0 +1,83 @@
+clear
+clf
+
+% Load and parse all the GNSS sites using a nifty for loop!
+%
+  stationlist={'P403','P395','P396','P404'};
+
+  for k=1:4
+    [T{k},X{k},Y{k},xlocation(k),ylocation(k)]=load_and_parse_one_GNSS(stationlist{k});
+    [vx(k),vy(k),XLINE{k},YLINE{k}]=fit_velocity_one_GNSS(T{k},X{k},Y{k});
+    XRESIDUAL{k}=X{k}-XLINE{k};
+    YRESIDUAL{k}=Y{k}-YLINE{k};
+  end
+
+%
+% plot all the data on a single figure together
+%
+  figure(1)
+  clf
+
+  for k=1:4
+    subplot(211)
+    plot(T{k},X{k}-X{k}(1))
+    hold on
+
+    subplot(212)
+    plot(T{k},XRESIDUAL{k})
+    hold on
+  end
+
+%
+% Load and Parse the map data
+%
+  fid=fopen('coastfile.xy');
+  C=textscan(fid,'%f %f','headerlines',0);
+  fclose(fid);  
+
+  coast_lon=C{1};
+  coast_lat=C{2};
+
+
+%
+% plot a map for everything!
+%
+  figure(2)
+  clf
+  plot(coast_lon,coast_lat)
+  xlim([-126,-121])
+  ylim([44,50])
+
+%
+% plot a velocity vector on our map
+%
+  hold on
+  quiver(xlocation,ylocation,vx,vy)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% FUNCTION DEFINITIONS START HERE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+  function [t,x,y,xlocation,ylocation]=load_and_parse_one_GNSS(stationname)
+    filename=[stationname,'.NA.tenv3.txt'];
+
+    fid=fopen(filename);
+    C=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
+    fclose(fid);  
+
+    t=C{3};
+    x=C{9};
+    y=C{11};
+
+    xlocation=C{22}(1);
+    ylocation=C{21}(1);
+  end
+
+  function [vx,vy,xline,yline]=fit_velocity_one_GNSS(t,x,y)
+    P=polyfit(t,x,1);
+    Q=polyfit(t,y,1);
+    vx=P(1)*1000; % convert from m/y to mm/y
+    vy=Q(1)*1000;
+    xline=polyval(P,t);
+    yline=polyval(Q,t);
+
+  end
