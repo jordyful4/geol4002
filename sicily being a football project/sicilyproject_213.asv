@@ -1,0 +1,134 @@
+clear
+
+%%sicily plate project
+%%purpose- to graph the rate of position change of each station to see the
+%%general motion of the country caused by the african plate movement in relation to the stationary eurasian
+%%plaet
+
+%%load map file and plot
+
+fid=fopen('coastfile.xy');
+  C=textscan(fid,'%f %f','headerlines',0);
+  fclose(fid);  
+
+  coast_lon=C{1};
+  coast_lat=C{2};
+
+fid=fopen('politicalboundaryfile.xy');
+  C=textscan(fid,'%f %f','headerlines',0);
+  fclose(fid);  
+
+  polit_lon=C{1};
+  polit_lat=C{2};
+
+ plates=load('boundaries_Bird_2002.xy');
+ lon_plates=plates(:,1);
+ lat_plates=plates(:,2);
+
+%%%station data extraction
+   stationlist={'AGRN','BIRG','EIIV','HPAC','HSCI','MPNC','MSFR','PIN5','SIMH'};
+
+  for k=1:9
+    [T{k},X{k},Y{k},xlocation(k),ylocation(k)]=load_and_parse_one_GNSS(stationlist{k});
+    [eastvel(k),northvel(k),XLINE{k},YLINE{k}]=fit_velocity_one_GNSS(T{k},X{k},Y{k});
+    XRESIDUAL{k}=X{k}-XLINE{k};
+    YRESIDUAL{k}=Y{k}-YLINE{k};
+  end
+
+  for k=1:9
+      [vel(k),azi(k)]=calc_velocity_one_GNSS_station(eastvel(k),northvel(k));
+  end
+
+  %longitude correction
+  true_xlocation=xlocation+360;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%plotting attempts
+
+%%%%map figure
+ figure(1)
+  clf
+  hold on
+  plot(coast_lon,coast_lat,'k')
+  plot(polit_lon,polit_lat,'y')
+  plot(lon_plates,lat_plates,'r')
+    xlim([0,25])
+    ylim([36,46])
+
+    quiver(true_xlocation,ylocation,eastvel,northvel)
+%%%%change in position over time graphs
+ figure(2)
+  clf
+
+  for k=1:9
+    subplot(211)
+    xlabel('Time')
+    ylabel('Easting')
+    title('Easting vs Time')
+    plot(T{k},X{k}-X{k}(1))
+    xlim([2010,2026.6])
+    legend(stationlist)
+    hold on
+
+    subplot(212)
+     xlabel('Time')
+    ylabel('Easting')
+    title('Easting vs Time Residuals')
+    plot(T{k},XRESIDUAL{k})
+    xlim([2010,2026.6])
+    hold on
+  end
+
+figure(3)
+  clf
+
+  for k=1:9
+    subplot(211)
+    xlabel('Time')
+    ylabel('Northing')
+    title('Northing vs Time')
+    plot(T{k},Y{k}-Y{k}(1))
+    xlim([2012,2026.6])
+    legend(stationlist)
+    hold on
+
+    subplot(212)
+    xlabel('Time')
+    ylabel('Northing')
+    title('Northing vs Time Residuals')
+    plot(T{k},YRESIDUAL{k})
+    xlim([2010,2026.6])
+    hold on
+  end
+
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ %%%%%%%%Functions start here%%%%%%%%%%%%%%%
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ function [t,x,y,xlocation,ylocation]=load_and_parse_one_GNSS(stationname)
+    filename=[stationname,'.EU.tenv3.txt'];
+
+    fid=fopen(filename);
+    C=textscan(fid,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
+    fclose(fid);  
+
+    t=C{3};
+    x=C{9};
+    y=C{11};
+
+    xlocation=C{22}(1);
+    ylocation=C{21}(1);
+  end
+
+
+  function [eastvel,northvel,xline,yline]=fit_velocity_one_GNSS(t,x,y)
+    P=polyfit(t,x,1);
+    eastvel=P(1)*1000; % convert from m/y to mm/y
+    Q=polyfit(t,y,1);
+    northvel=Q(1)*1000;
+    xline=polyval(P,t); 
+    yline=polyval(Q,t);
+  end
+ 
+  function [vel,azi]=calc_velocity_one_GNSS_station(eastvel,northvel)
+  vel=sqrt(eastvel^2 + northvel^2)
+  azi=atan2d(eastvel,northvel)
+  end
