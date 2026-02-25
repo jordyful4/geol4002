@@ -1,0 +1,90 @@
+%%%%Jordyn Fulton
+%%Jackson Square point cloud second rodeo
+
+clear
+format compact
+tic
+
+ %Load cloud data
+
+ filename='jacksonsquare_points.laz';
+ lasreader=lasFileReader(filename);
+ pointcloud=readPointCloud(lasreader) %[output:06f266a5]
+
+ xpoint=pointcloud.Location(:,1);
+ ypoint=pointcloud.Location(:,2);
+ zpoint=pointcloud.Location(:,3);
+
+ figure(1) %[output:960e8f0a]
+ clf %[output:960e8f0a]
+ plot3(xpoint,ypoint,zpoint,'.') %[output:960e8f0a]
+ grid %[output:960e8f0a]
+
+ figure(2) %[output:20e0df87]
+ clf %[output:20e0df87]
+ scatter(xpoint,ypoint,5,zpoint) %[output:20e0df87]
+ colorbar %[output:20e0df87]
+%%%INSERT FIGURE 3%%%%%%%%%%%%%%%
+%%%actual figure 3 attempt now that everything else is good just tstay in
+%%%this bubble for now
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+figure(3)
+clf
+scatter3(VX,VY,Z,5,zpoint) %[output:904a85da]
+colorbar
+
+
+
+%%%%%%%%%%%%%%%%%%%
+
+% figure(3)
+ clf
+ pcshow(pointcloud)
+
+ %%%%DEM%%%%%%%%%%%%%
+ outputfilename='jacksonsquare_output.tin(1)';
+ [area,radius]=readgeoraster(outputfilename);
+
+ %%%%%%Vector components%%%%
+ xvec1=radius.XWorldLimits(1);
+ xvec2=radius.XWorldLimits(2);
+ distXv=radius.CellExtentIRLx;
+ VX=(xvec1+distXv/2):distXv:(xvec2-distXv/2);
+
+ yvec1=radius.YWorldLimits(1);
+ yvec2=radius.YWorldLimits(2);
+ distYv=radius.CellExtentIRLy;
+ VY=(yvec1+distYv/2):distYv:(yvec2-distYv/2);
+
+ zvec1=radius.ZWorldLimits(1);
+ zvec2=radius.ZWorldLimits(2);
+ distZv=radius.CellExtentIRLz;
+ VZ=(zvec1+distZv/2):distZv:(zvec2-distZv/2);
+
+ %%converting PsuedoNaNs to regular NaNs
+ iNaNs=find(a==-9999);
+ a(iNaNs)=NaN;
+
+ figure(4)
+ clf
+ imagesc(X,Y,area)
+ colorbar
+
+%[appendix]{"version":"1.0"}
+%---
+%[metadata:view]
+%   data: {"layout":"onright","rightPanelPercent":21.5}
+%---
+%[output:06f266a5]
+%   data: {"dataType":"textualVariable","outputData":{"name":"pointcloud","value":"  <a href=\"matlab:helpPopup('pointCloud')\" style=\"font-weight:bold\">pointCloud<\/a> with properties:\n\n     Location: [939639×3 double]\n        Count: 939639\n      XLimits: [7.8330e+05 7.8360e+05]\n      YLimits: [3.3176e+06 3.3178e+06]\n      ZLimits: [-0.0900 33.4300]\n        Color: []\n       Normal: []\n    Intensity: [939639×1 uint16]"}}
+%---
+%[output:960e8f0a]
+%   data: {"dataType":"image","outputData":{"dataUri":"data:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAE0AAAAvCAYAAACmNUfhAAAAAXNSR0IArs4c6QAAAoFJREFUaEPt2T1oWlEUB\/C\/6Uc0hdpoq1QcKg5CR4c4VezS0dHBEpQupS1SUVAHcZDiF24idFQQJwfJkLgIEujg5NZJCxahKJRSWqpIXlLuK69YkZKcEN4LHEd953n4vf+954o6k8l0Bg28HA4HyuUybDab3M1yuUQ4HIbFYkE+n4fBYPj7fiKRQL\/fV61rnVbQisUirFarDJXL5eD1ejEYDNBoNFAoFKDX62WkxWKBVCrFaJsiU6vVMJ1OMZlM4Pf7kU6nMZvN5DT2ej1UKhVO2qqAx+NBJpNBq9WC2+2G3W5HLBaTLxFow+EQyWSS0RQBZW8Taep0OqhWq5jP54hGo4y2KSZKwur1ury\/BYNB+TJJkhCPx3l5rqMJMDEVS6WS\/JFYnt1uF4FAQEZrt9sYj8cIhULIZrM8CASS2PhdLtc\/lqPRCE6nU56YyvRsNpuqDgHRoGaOHKtakUgEPp8Pr49+wPzoMXZvLuHXfVB181\/tT9Nor44NOL3zAObbJ3hhOGa0\/50XRNLE2Wz\/SMKJ3iyjPfuq\/rJUetZk0pQp+rK3jcUtI+5vSzAevlV189f88hQNirR1rfuY\/dLh7tYCn949Ue0wu\/7Fmkya0uTumwPcMD6E9P0LvlX9jHYeAUY7j9LaNYzGaAQBQgkn7RJoO6c\/8bnwlHCHqym5FtPTsnOGj+m9qxEg3PVaoPGR4wJPlve0C2Dx4ZaApZQYn7\/H1r0\/f+nxL4JLQGqhVNODQAtAm3pgNMKTYTRGIwgQSjhpjEYQIJRw0hiNIEAo4aQxGkGAUMJJYzSCAKGEk8ZoBAFCCSeN0QgChBJOGqMRBAglnDRGIwgQSjhpjEYQIJT8BgjbIvoW2KYDAAAAAElFTkSuQmCC","height":45,"width":75}}
+%---
+%[output:20e0df87]
+%   data: {"dataType":"image","outputData":{"dataUri":"data:image\/png;base64,iVBORw0KGgoAAAANSUhEUgAAAE0AAAAuCAYAAABtaZREAAAAAXNSR0IArs4c6QAAAZpJREFUaEPt2D9LAnEAxvHHMunA\/uAFcdUUuBxUdGMgbQ0NvYdagg5qbLHW1t6GW29CioajQCTCwZA44TIhLTKE4tqq6fcUp8HjfN+7Hx8fbzCVy+XeoY+RQEpoRl6fFwvN3ExohJnQhMYIEI3eaUIjBIhESxMaIUAkWprQCAEi0dKSQMuMOZiwVpFKZ\/DweEY88v8nRkuLwdzlE2SX0mhfTqHfi1BvHKH3dk9LOI7zow3DkL5fEqERmj25CXdvC9bcPEZuK6hV1xBeH+K5dUGdNQYrFovwPO9LHzUq2D04xrDiGaEtbORht0vIu6Potppojs\/gpryP17D8p2hBEMD3feqeSURGaPGB1k930L1yMV3ooH5ewF1pG\/1Ogz5rvLbvP9F4YcO6Mur\/NGs2C3vFwUu0iKda9VdgtPSAQ+OlDfi8Q\/F4oRFfg9CERggQiZYmNEKASLQ0oRECRKKlCY0QIBItTWiEAJFoaUIjBIhESxMaIUAkWprQCAEi0dKERggQiZYmNEKASLQ0oRECRKKlCY0QIBItjUD7ANe7hbXxahK1AAAAAElFTkSuQmCC","height":45,"width":75}}
+%---
+%[output:904a85da]
+%   data: {"dataType":"error","outputData":{"errorType":"runtime","text":"Unrecognized function or variable 'X'."}}
+%---
