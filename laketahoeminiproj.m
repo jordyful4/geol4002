@@ -2,35 +2,35 @@
 
 clear
 
- filename1='before2021cali.tif';
-  filename2='after2021cali.tif';
+ fileName1='before2021cali.tif';
+  fileName2='after2021cali.tif';
 
-  [x1,y1,z1]=load_one_DEM(filename1);
-  [x2,y2,z2]=load_one_DEM(filename2);
+  [x1,y1,z1]=load_one_DEM(fileName1);
+  [x2,y2,z2]=load_one_DEM(fileName2);
 
 
 
- CA=[0,500]; % the color axis extent for these figures
+ %=[0,500]; % the color axis extent for these figures
 
-  figure(2)
-  clf
-  ax(1)=subplot(121);
-  imagesc(x1,y1,z1)
-  axis xy
-  axis equal
-  colorbar
-  title('before')
-  caxis(CA)
-
-  ax(2)=subplot(122);
-  imagesc(x2,y2,z2)
-  axis xy
-  axis equal
-  colorbar
-  title('after')
-  caxis(CA)
-
-  linkaxes(ax,'xy')
+  % figure(2)
+  % clf
+  % ax(1)=subplot(121);
+  % imagesc(x1,y1,z1)
+  % axis xy
+  % axis equal
+  % colorbar
+  % title('before')
+  % %caxis([0,500])
+  % 
+  % ax(2)=subplot(122);
+  % imagesc(x2,y2,z2)
+  % axis xy
+  % axis equal
+  % colorbar
+  % title('after')
+  % %caxis([0,500])
+  % 
+  % linkaxes(ax,'xy')
 
   % determine the extent of the overlap
 %
@@ -72,7 +72,7 @@ clear
   axis equal
   colorbar
   title('before - cut to coregistered size')
-  caxis(CA)
+  %caxis([0,500])
 
   ax(2)=subplot(122);
   imagesc(x_smaller,y_smaller,z2_smaller)
@@ -80,10 +80,39 @@ clear
   axis equal
   colorbar
   title('after - cut to coregistered size')
-  caxis(CA)
+  %caxis([0,500])
 
   linkaxes(ax,'xy')
 
+%
+% Take the gradient!
+%
+  [d1dx,d1dy]=gradient(z1_smaller);
+  [d2dx,d2dy]=gradient(z2_smaller);
+
+%
+% Plot the gradient in a "gray" colormap, so it looks like shadows
+%  - we looked at dadx: try looking at dady, or -dadx, or dadx+dady
+%  
+  figure(6)
+  clf
+  ax(3)=subplot(121);
+  imagesc(x_smaller,y_smaller,d1dx)
+  colorbar
+  axis equal
+  axis xy
+  title('Before Caldo Fire')
+  colormap(gray)
+  caxis([-2,2])
+
+  ax(4)=subplot(122);
+imagesc(x_smaller,y_smaller,d2dx)
+  colorbar
+  axis equal
+  axis xy
+  title('After Caldo Fire')
+  colormap(gray)
+  caxis([-2,2])
 %
 % Difference the DEMs and plot them
 %
@@ -91,14 +120,15 @@ clear
 
   figure(3)
   clf
-  ax(3)=subplot(121);
+  % ax(3)=subplot(121);
   imagesc(x_smaller,y_smaller,z_difference)
   axis xy
   axis equal
   colorbar
   title('after-before difference')
   colormap(flipud(cpolar)) % flip the colors to match fig 5c
-  caxis([-2,2])
+  caxis([-10,10])
+  ax(5)=gca;
 
   linkaxes(ax,'xy')
 
@@ -106,9 +136,9 @@ clear
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function Definitions Start Here
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-  function [x,y,a]=load_one_DEM(filename)
+  function [x,y,a]=load_one_DEM(filename1)
     %load the file
-    [a,r]=readgeoraster(filename);
+    [a,r]=readgeoraster(filename1);
 
     % Make the x and y vectors for the DEM grid
     x1=r.XWorldLimits(1);
