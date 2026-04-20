@@ -1,0 +1,288 @@
+%%%RIDGECREST EQ ASCENDING AND DESCENDING MODEL COMPARISONS HW
+
+
+clear
+%%load the interferograms
+desc_file='S1-GUNW-D-R-071-tops-20190704_20190610-135211-36450N_34472N-PP-1bf7-v2_0_2.nc';
+asc_file='S1-GUNW-A-R-064-tops-20190710_20190628-015013-36885N_35006N-PP-a1b9-v2_0_2.nc';
+
+%%%reading the descending file
+  D1.x=ncread(desc_file,'/science/grids/data/longitude');
+  D1.y=flipud(ncread(desc_file,'/science/grids/data/latitude'));
+  D1.u=flipud(ncread(desc_file,'/science/grids/data/unwrappedPhase')'); % unwrapped phase (radians)
+  D1.c=flipud(ncread(desc_file,'/science/grids/data/coherence')');
+  D1.m=flipud(ncread(desc_file,'/science/grids/data/connectedComponents')');
+  D1.a=flipud(ncread(desc_file,'/science/grids/data/amplitude')'); % amplotude (watts)
+  D1.L=ncread(desc_file,'/science/radarMetaData/wavelength'); % wavelength (m)
+  D1.w=mod(D1.u,2*pi);
+
+%%%reading the ascending file
+  A1.x=ncread(asc_file,'/science/grids/data/longitude');
+  A1.y=flipud(ncread(asc_file,'/science/grids/data/latitude'));
+  A1.u=flipud(ncread(asc_file,'/science/grids/data/unwrappedPhase')'); % unwrapped phase (radians)
+  A1.c=flipud(ncread(asc_file,'/science/grids/data/coherence')');
+  A1.m=flipud(ncread(asc_file,'/science/grids/data/connectedComponents')');
+  A1.a=flipud(ncread(asc_file,'/science/grids/data/amplitude')'); % amplotude (watts)
+  A1.L=ncread(asc_file,'/science/radarMetaData/wavelength'); % wavelength (m)
+  A1.w=mod(A1.u,2*pi);
+
+%%%redifining grid area of interest
+
+    x1=-118.3; % left edge
+    x2=-117.0; % right edge
+    y1=35.2;   % bottom edge
+    y2=36.3;   % top edge
+
+%%%descending indices at area of interest
+
+[~,D1.ix1]=min(abs(D1.x-x1));
+    [~,D1.ix2]=min(abs(D1.x-x2));
+    [~,D1.iy1]=min(abs(D1.y-y1));
+    [~,D1.iy2]=min(abs(D1.y-y2));
+%%%ascending indicies at area of interest
+
+[~,A1.ix1]=min(abs(A1.x-x1));
+    [~,A1.ix2]=min(abs(A1.x-x2));
+    [~,A1.iy1]=min(abs(A1.y-y1));
+    [~,A1.iy2]=min(abs(A1.y-y2));
+
+%%%variables to be used for multiple grids
+
+    dx=1/3600*3; % 3 arcsecond spacing (recall, 1 degree of lat/lon = 3600 arcseconds)
+    dy=1/3600*3; % 3 arcsecond spacing
+    x=[x1:dx:x2]'; % take the transpose to make it a single column, rather than a row
+    y=[y1:dy:y2]';
+    L=D1.L;
+
+%%%DESCENDING OBSERVATIONS
+
+    ObservationD.u=D1.u(D1.iy1:D1.iy2,D1.ix1:D1.ix2);
+    ObservationD.c=D1.c(D1.iy1:D1.iy2,D1.ix1:D1.ix2);
+    ObservationD.m=D1.m(D1.iy1:D1.iy2,D1.ix1:D1.ix2);
+    ObservationD.a=D1.a(D1.iy1:D1.iy2,D1.ix1:D1.ix2);
+    ObservationD.w=D1.w(D1.iy1:D1.iy2,D1.ix1:D1.ix2);
+
+    %%descending line of sight displacement
+    ObservationD.LOS=ObservationD.u*L/(4*pi);
+
+
+%%%ASCENDING OBSERVATIONS
+    ObservationA.u=A1.u(A1.iy1:A1.iy2,A1.ix1:A1.ix2);
+    ObservationA.c=A1.c(A1.iy1:A1.iy2,A1.ix1:A1.ix2);
+    ObservationA.m=A1.m(A1.iy1:A1.iy2,A1.ix1:A1.ix2);
+    ObservationA.a=A1.a(A1.iy1:A1.iy2,A1.ix1:A1.ix2);
+    ObservationA.w=A1.w(A1.iy1:A1.iy2,A1.ix1:A1.ix2);
+    
+    %%ascending line of sight displacement
+    ObservationA.LOS=ObservationA.u*L/(4*pi);
+
+
+ %%%DEFINING PARAMETERS OF RIDGECREST 
+
+ %%%center location of the fault plane
+     x0=-117.5;
+     y0=35.7;
+ %%%fault/plane orientation info
+    STRIKE=322;  % degrees east of north
+    DIP=85;     % degress down from horizontal
+
+ %%%fault/plane dimensions and location
+    DEPTH=10;   % center of plane, km below the surface
+    LENGTH=42.5;  % along strike length of plane, km
+    WIDTH=13.75;   % along dip width of plane, km
+
+ %%%amount and direction of motion on fault plane
+    RAKE=180;    % direction of in-plane hanging wall motion, in deg CCW from strike
+    SLIP=3;     % how much in-plane slip (m)
+    OPEN=0;   % how much opening (+) or closing (-) of the plane (m)
+
+   % the longitude and latitude value of every single pixel
+    [xmesh,ymesh]=meshgrid(x,y);
+
+    % the location in relative km of every single pixel
+    ymesh_km=(ymesh-y0)*111.1;
+    xmesh_km=(xmesh-x0)*111.1*cosd(y0);
+
+    %%determining expected surface displacement
+    [Model.E,Model.N,Model.Z] = okada85(xmesh_km,ymesh_km,DEPTH,STRIKE,DIP,LENGTH,WIDTH,RAKE,SLIP,OPEN);
+
+      IncAngle=39;               % degrees from vertical - ranges from 32 - 46, so this is a good average number
+      HeadAngle_ascending=-10;   % ascending flight direction, in deg E of N
+      HeadAngle_descending=-170; % descending flight direction, in deg E of N
+
+    %%%unit vector components
+      px_a=-sind(IncAngle)*cosd(HeadAngle_ascending);
+      py_a=sind(IncAngle)*sind(HeadAngle_ascending);
+      pz_a=cosd(IncAngle);
+
+      px_d=-sind(IncAngle)*cosd(HeadAngle_descending);
+      py_d=sind(IncAngle)*sind(HeadAngle_descending);
+      pz_d=cosd(IncAngle);
+
+    %%%calculating LOS displacement
+      Model.LOS_ascending=Model.E*px_a+Model.N*py_a+Model.Z*pz_a;
+      Model.LOS_descending=Model.E*px_d+Model.N*py_d+Model.Z*pz_d;
+
+    %%calculating the wrapped phase displacement
+      Model.w_ascending=mod(Model.LOS_ascending/L*4*pi,2*pi);
+      Model.w_descending=mod(Model.LOS_descending/L*4*pi,2*pi);
+
+ %%%COMPARING THE OBSERVATIONS AND THE MODEL
+  CompareMisfit_D.LOS=ObservationD.LOS-Model.LOS_descending;
+  CompareMisfit_A.LOS=ObservationA.LOS-Model.LOS_ascending;
+
+  %%calculating wrapped difference
+  CompareMisfit_D.w=mod(CompareMisfit_D.LOS/L*4*pi,2*pi);
+  CompareMisfit_A.w=mod(CompareMisfit_A.LOS/L*4*pi,2*pi);
+
+  %%calculate the RMS value of misfit
+   CompareMisfit_D.RMS=rms(CompareMisfit_D.LOS(:),'omitnan');
+   CompareMisfit_A.RMS=rms(CompareMisfit_A.LOS(:),'omitnan');
+
+   %%%ACTUALLY PLOTTING THE MODELS
+
+   figure(1),clf
+    subplot(331),
+      imagesc(x,y,Model.E),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled east (m)')
+      caxis([-1,1]),
+    subplot(332),
+      imagesc(x,y,Model.N),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled north (m)')
+      caxis([-1,1]),
+    subplot(333),
+      imagesc(x,y,Model.Z),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled vertical (m)')
+      caxis([-1,1]),
+    subplot(334),
+      imagesc(x,y,Model.w_ascending),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled wrapped phase (ascending)')
+    subplot(335),
+      imagesc(x,y,Model.LOS_ascending),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled LOS (ascending) (m)')
+      caxis([-1,1]),
+      hold on,plot(x0,y0,'k*','linewidth',1)
+    subplot(337),
+      imagesc(x,y,Model.w_descending),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled wrapped phase (descending)')
+    subplot(338),
+      imagesc(x,y,Model.LOS_descending),
+      axis xy,
+      set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+      colorbar,
+      title('modeled LOS (descending) (m)')
+      caxis([-1,1]),
+      hold on,plot(x0,y0,'k*','linewidth',1)
+    colormap(jet)
+
+ %%%DESCENDING OBSERVATION FIGURE2
+figure(2),clf
+  ax(1)=subplot(321);
+    imagesc(x,y,ObservationD.w,'alphadata',~isnan(ObservationD.w)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('observed wrapped phase (descending)'),
+  ax(2)=subplot(322);
+    imagesc(x,y,ObservationD.LOS,'alphadata',~isnan(ObservationD.LOS)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('observed line of sight displacement (m)'),
+    caxis([-1,1])
+    hold on,plot(x0,y0,'k*','linewidth',1),
+  ax(3)=subplot(323);
+    imagesc(x,y,Model.w_descending),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('modeled descending wrapped phase')
+  ax(4)=subplot(324);
+    imagesc(x,y,Model.LOS_descending),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('modeled descending LOS displacement (m)')
+    caxis([-1,1])
+    hold on,plot(x0,y0,'k*','linewidth',1),
+  ax(5)=subplot(325);
+    imagesc(x,y,CompareMisfit_D.w,'alphadata',~isnan(CompareMisfit_D.w)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+     colorbar,
+    title('difference wrapped phase'),
+  ax(6)=subplot(326);
+    imagesc(x,y,CompareMisfit_D.LOS,'alphadata',~isnan(CompareMisfit_D.LOS)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title({'differenced LOS displacement (m)';['RMS = ',num2str(CompareMisfit_D.RMS),' m']}),
+    caxis([-1,1])
+    hold on,plot(x0,y0,'k*','linewidth',1),
+  colormap(jet)
+  linkaxes(ax,'xy')
+
+  %%%ASCENDING OBSERVATION FIGURE 3
+  figure(3),clf
+  ax(1)=subplot(321);
+    imagesc(x,y,ObservationA.w,'alphadata',~isnan(ObservationA.w)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('observed wrapped phase (ascending)'),
+  ax(2)=subplot(322);
+    imagesc(x,y,ObservationA.LOS,'alphadata',~isnan(ObservationA.LOS)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('observed line of sight displacement (m)'),
+    caxis([-1,1])
+    hold on,plot(x0,y0,'k*','linewidth',1),
+  ax(3)=subplot(323);
+    imagesc(x,y,Model.w_ascending),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('modeled descending wrapped phase')
+  ax(4)=subplot(324);
+    imagesc(x,y,Model.LOS_ascending),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title('modeled descending LOS displacement (m)')
+    caxis([-1,1])
+    hold on,plot(x0,y0,'k*','linewidth',1),
+  ax(5)=subplot(325);
+    imagesc(x,y,CompareMisfit_A.w,'alphadata',~isnan(CompareMisfit_A.w)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+     colorbar,
+    title('difference wrapped phase'),
+  ax(6)=subplot(326);
+    imagesc(x,y,CompareMisfit_A.LOS,'alphadata',~isnan(CompareMisfit_A.LOS)),
+    axis xy,
+    set(gca,'dataaspectratio',[1/cosd(y0),1,1]),
+    colorbar,
+    title({'differenced LOS displacement (m)';['RMS = ',num2str(CompareMisfit_A.RMS),' m']}),
+    caxis([-1,1])
+    hold on,plot(x0,y0,'k*','linewidth',1),
+  colormap(jet)
+  linkaxes(ax,'xy')
