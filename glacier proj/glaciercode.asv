@@ -1,0 +1,172 @@
+clear
+
+%%%%glacier project code for presentation figures 
+%%%section one- digital elevation model figures
+%%%%%%%using rasters_ data
+ %DOWNLOAD THE RIGHT POINT CLOUD DATA AND THEN COME BACKRead in point cloud data
+
+ 
+  filename_ini='C:\Users\jojo1\OneDrive\Documents\GitHub\geol4002\glacier proj\output_AW3D30.tif'; 
+  [elev_i,ref]=readgeoraster(filename_ini);
+   elev_i=flipud(elev_i);
+
+  %visualizing it
+  figure(4)
+  clf
+  imagesc(elev_i)
+  colormap(jet)
+  colorbar
+  caxis([0 1800])
+  title('Initial Digital Elevation Model (2D) - m above sea level')
+
+  figure(6)
+  clf
+  surf(double(elev_i), 'EdgeColor', 'none')
+  colormap(jet)
+  colorbar
+  caxis([0 2250])
+  title('Initial Digital Elevation Model (3D) - m above sea level')
+  
+  
+
+  filename_fin='C:\Users\jojo1\OneDrive\Documents\GitHub\geol4002\glacier proj\output_hh.tif'; 
+  [elev_fin,ref]=readgeoraster(filename_fin);
+   elev_fin=flipud(elev_fin);
+
+ figure(5)
+ clf
+  imagesc(elev_fin)
+  colormap(jet)
+  colorbar
+  caxis([0 1800])
+  title('Final Digital Elevation Model (2D) - m above sea level')
+
+  figure(7)
+  clf
+  surf(double(elev_fin), 'EdgeColor', 'none')
+  colormap(jet)
+  colorbar
+  caxis([0 2250])
+  title('Final Digital Elevation Model (3D) - m above sea level')
+ 
+
+
+
+
+
+%%%section two- geodessy time series figures
+%%%%%% using .tenv3 data
+
+% Load and Parse the GNSS data
+            %STATION 1
+  fileS1=fopen('C:\Users\jojo1\OneDrive\Documents\GitHub\geol4002\glacier proj\BMCP.NA.tenv3.txt');
+
+
+  C_BMCP=textscan(fileS1,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
+  fclose(fileS1);  
+
+  t_BM=C_BMCP{3};
+  x_BM=C_BMCP{9};
+
+  xlocation_BM=C_BMCP{22}(1);
+  ylocation_BM=C_BMCP{21}(1);
+            %STATION 2
+  fileS2=fopen('C:\Users\jojo1\OneDrive\Documents\GitHub\geol4002\glacier proj\QUIC.NA.tenv3.txt');
+  C_QC=textscan(fileS2,'%s %s %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f','headerlines',1);
+  fclose(fileS2);
+
+  t_QC=C_QC{3};
+  x_QC=C_QC{9};
+
+  xlocation_QC=C_QC{22}(1);
+  ylocation_QC=C_QC{21}(1);
+
+% Load and Parse the map data
+%
+ file_coasts=fopen('C:\Users\jojo1\OneDrive\Documents\GitHub\geol4002\glacier proj\coastfile.xy');
+  C_coast=textscan(file_coasts,'%f %f','headerlines',0);
+  fclose(file_coasts);  
+
+  coast_lon=C_coast{1};
+  coast_lat=C_coast{2};
+
+%
+% Plot the data
+%
+  figure(1)
+  clf
+  subplot(2,1,1)
+  plot(t_BM,x_BM,'.')
+
+  %
+% fit a line to the data
+        %STATION 1
+  P1=polyfit(t_BM,x_BM,1);
+  vx_BM=P1(1)*1000; % convert from m/y to mm/y
+
+  xline_BM=polyval(P1,t_BM);
+        %STATION 2
+  P2=polyfit(t_QC,x_QC,1);
+  vx_QC=P2(1)*1000; % convert from m/y to mm/y
+
+  xline_QC=polyval(P2,t_QC);
+
+
+%
+% plot the line on the existing figure
+%
+  hold on
+  plot(t_BM,xline_BM)
+   title("Years at station BMCP")
+  %
+
+subplot(2,1,2)
+  plot(t_QC,x_QC,'.')
+hold on
+  plot(t_QC,xline_QC)
+   title("Years at station QUIC")
+  %
+  % calculate the residual lines of fit
+%
+  xresidual_BM=x_BM-xline_BM;
+  RP1=polyfit(t_BM,xresidual_BM,1);
+  Rvx_BM=RP1(1)*1000; % convert from m/y to mm/y
+
+  Rxline_BM=polyval(RP1,t_BM);
+   
+  xresidual_QC=x_QC-xline_QC;
+  RP2=polyfit(t_QC,xresidual_QC,1);
+  Rvx_QC=RP2(1)*1000; % convert from m/y to mm/y
+
+  Rxline_QC=polyval(RP2,t_QC);
+
+%
+% plot the residuals
+  figure(2)
+  plot(t_BM,Rxline_BM,'.')
+  hold on
+  plot(t_QC,Rxline_QC,'.')
+  title("Residual Best Fit Line - Stations BMCP & QUIC")
+  legend("Statiob", "Residual 2")
+ hold off
+
+  %
+% plot a map
+%
+  figure(3)
+  clf
+  plot(coast_lon,coast_lat)
+  lgd=legend('Coast Line', 'Station BMCP', 'Station QUIC')
+  title("Station Velocity Vectors on Map of Alaska")
+%%adding station vectors to map
+
+ vy_BM=vx_BM/2;
+ vy_QC=vx_QC/2;   
+%
+% plot a velocity vector on our map
+%
+  hold on
+  quiver(xlocation_BM,ylocation_BM,vx_BM,vy_BM)
+  quiver(xlocation_QC,ylocation_QC,vx_QC,vy_QC)
+
+  
